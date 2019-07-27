@@ -1,0 +1,166 @@
+Initialize Loadgenerator 
+NAME                                          STATUS   ROLES    AGE   VERSION
+ip-172-31-12-197.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+ip-172-31-29-160.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+ip-172-31-59-142.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+apiVersion: v1
+kind: Pod
+metadata:
+  name: loadgen
+spec:
+  terminationGracePeriodSeconds: 5
+  restartPolicy: Always
+  initContainers:
+    - name: wait-frontend
+      image: alpine:3.6
+      command: ['sh', '-c', 'set -x;  apk add --no-cache curl && 
+      until timeout -t 4 curl -f "http://${FRONTEND_ADDR}"; do 
+      echo "waiting for http://${FRONTEND_ADDR}"; 
+      sleep 2;
+      done;']
+      env:
+        - name: FRONTEND_ADDR
+          value: "frontend:31113"
+  containers:
+    - name: main
+      image: gcr.io/google-samples/microservices-demo/loadgenerator:v0.1.1
+      env:
+        - name: FRONTEND_ADDR
+          value: "frontend:31113"
+        - name: USERS
+          value: "100"
+      resources:
+        requests:
+          cpu: 300m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+pod/loadgen created
+NAME                        READY   STATUS     RESTARTS   AGE
+frontend-66dd5f88f9-rwbwq   1/1     Running    0          6d3h
+loadgen                     0/1     Init:0/1   0          1s
+wait for pod to initialize
+pod is not Running sleep for 3s
+pod is not Running sleep for 3s
+pod is not Running sleep for 3s
+NAME                        READY   STATUS    RESTARTS   AGE
+frontend-66dd5f88f9-rwbwq   1/1     Running   0          6d3h
+loadgen                     1/1     Running   0          11s
+Harvest logs from pod
+./loadgen.sh: 21: ./loadgen.sh: [[: not found
++ locust --host=http://frontend:31113 --no-web -c 100
+[2019-07-27 17:03:46,291] loadgen/INFO/locust.main: Starting Locust 0.8.1
+[2019-07-27 17:03:46,291] loadgen/INFO/locust.runners: Hatching and swarming 100 clients at the rate 1 clients/s...
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                              0     0(0.00%)                                       0.00
+
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+ GET /                                                              2     0(0.00%)     718     711     726  |     710    0.00
+ GET /product/0PUK6V6EV0                                            1     0(0.00%)     621     621     621  |     620    0.00
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                              3     0(0.00%)                                       0.00
+
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+ GET /                                                              4     0(0.00%)     717     711     726  |     720    0.50
+ GET /product/0PUK6V6EV0                                            1     0(0.00%)     621     621     621  |     620    0.50
+ GET /product/1YMWWN1N4O                                            1     0(0.00%)     623     623     623  |     620    0.00
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.00
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                              7     0(0.00%)                                       1.00
+
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+ GET /                                                              6     0(0.00%)     715     709     726  |     720    0.75
+ GET /product/0PUK6V6EV0                                            1     0(0.00%)     621     621     621  |     620    0.25
+ GET /product/1YMWWN1N4O                                            1     0(0.00%)     623     623     623  |     620    0.25
+ GET /product/LS4PSXUNUM                                            1     0(0.00%)     619     619     619  |     620    0.00
+ GET /product/OLJCESPC7Z                                            1     0(0.00%)     621     621     621  |     620    0.00
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.25
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                             11     0(0.00%)                                       1.50
+
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+ GET /                                                              8     0(0.00%)     715     709     726  |     710    0.83
+ GET /cart                                                          1     0(0.00%)     559     559     559  |     560    0.00
+ POST /cart                                                         1     0(0.00%)     791     791     791  |     790    0.00
+ GET /product/0PUK6V6EV0                                            1     0(0.00%)     621     621     621  |     620    0.17
+ GET /product/1YMWWN1N4O                                            1     0(0.00%)     623     623     623  |     620    0.17
+ GET /product/LS4PSXUNUM                                            2     0(0.00%)     618     618     619  |     620    0.17
+ GET /product/OLJCESPC7Z                                            2     0(0.00%)     620     620     621  |     620    0.17
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.17
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                             17     0(0.00%)                                       1.67
+
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+ GET /                                                             10     0(0.00%)     716     709     731  |     720    0.88
+ GET /cart                                                          2     0(0.00%)     561     559     564  |     560    0.12
+ POST /cart                                                         2     0(0.00%)     792     791     793  |     790    0.12
+ POST /cart/checkout                                                2     0(0.00%)     820     753     887  |     750    0.00
+ GET /product/0PUK6V6EV0                                            2     0(0.00%)     632     621     644  |     620    0.12
+ GET /product/1YMWWN1N4O                                            1     0(0.00%)     623     623     623  |     620    0.12
+ GET /product/LS4PSXUNUM                                            2     0(0.00%)     618     618     619  |     620    0.25
+ GET /product/OLJCESPC7Z                                            2     0(0.00%)     620     620     621  |     620    0.25
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.12
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                             24     0(0.00%)                                       2.00
+
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+ GET /                                                             12     0(0.00%)     717     709     731  |     720    0.90
+ GET /cart                                                          4     0(0.00%)     563     559     566  |     560    0.20
+ POST /cart                                                         3     0(0.00%)     790     788     793  |     790    0.20
+ POST /cart/checkout                                                2     0(0.00%)     820     753     887  |     750    0.20
+ GET /product/0PUK6V6EV0                                            2     0(0.00%)     632     621     644  |     620    0.20
+ GET /product/1YMWWN1N4O                                            1     0(0.00%)     623     623     623  |     620    0.10
+ GET /product/6E92ZMYYFZ                                            1     0(0.00%)     619     619     619  |     620    0.00
+ GET /product/L9ECAV7KIM                                            1     0(0.00%)     617     617     617  |     620    0.00
+ GET /product/LS4PSXUNUM                                            2     0(0.00%)     618     618     619  |     620    0.20
+ GET /product/OLJCESPC7Z                                            2     0(0.00%)     620     620     621  |     620    0.20
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.10
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                             31     0(0.00%)                                       2.30
+
+ Name                                                          # reqs      # fails     Avg     Min     Max  |  Median   req/s
+--------------------------------------------------------------------------------------------------------------------------------------------
+ GET /                                                             14     0(0.00%)     720     709     766  |     720    1.00
+ GET /cart                                                          5     0(0.00%)     563     559     566  |     560    0.40
+ POST /cart                                                         5     0(0.00%)     789     786     793  |     790    0.30
+ POST /cart/checkout                                                3     0(0.00%)     842     753     887  |     890    0.20
+ GET /product/0PUK6V6EV0                                            2     0(0.00%)     632     621     644  |     620    0.10
+ GET /product/1YMWWN1N4O                                            1     0(0.00%)     623     623     623  |     620    0.10
+ GET /product/2ZYFJ3GM2N                                            2     0(0.00%)     648     619     678  |     620    0.00
+ GET /product/66VCHSJNUP                                            1     0(0.00%)     621     621     621  |     620    0.00
+ GET /product/6E92ZMYYFZ                                            1     0(0.00%)     619     619     619  |     620    0.10
+ GET /product/L9ECAV7KIM                                            1     0(0.00%)     617     617     617  |     620    0.10
+ GET /product/LS4PSXUNUM                                            3     0(0.00%)     625     618     640  |     620    0.20
+ GET /product/OLJCESPC7Z                                            2     0(0.00%)     620     620     621  |     620    0.20
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.10
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Total                                                             41     0(0.00%)                                       2.80
+
+Currency logs:
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.00
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.25
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.17
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.12
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.10
+ POST /setCurrency                                                  1     0(0.00%)     716     716     716  |     720    0.10
+NAME                                          STATUS   ROLES    AGE   VERSION
+ip-172-31-12-197.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+ip-172-31-29-160.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+ip-172-31-59-142.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+Deleting pod
+pod "loadgen" deleted
+NAME                        READY   STATUS    RESTARTS   AGE
+frontend-66dd5f88f9-rwbwq   1/1     Running   0          6d3h
+NAME                                          STATUS   ROLES    AGE   VERSION
+ip-172-31-12-197.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+ip-172-31-29-160.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
+ip-172-31-59-142.us-west-2.compute.internal   Ready    <none>   36d   v1.12.7
